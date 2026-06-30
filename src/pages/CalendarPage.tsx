@@ -305,7 +305,9 @@ export default function CalendarPage() {
 
     if (pacientesRes.data) setPacientes(pacientesRes.data)
     if (agendamentosRes.data) {
-      const formattedEvents = agendamentosRes.data.map((ag: any) => {
+      const formattedEvents = agendamentosRes.data
+        .filter((ag: any) => ag.status !== 'cancelado')
+        .map((ag: any) => {
         const pacienteObj = (pacientesRes.data || []).find((p: any) => p.id === ag.paciente_id)
         const pacienteNome = pacienteObj?.nome || ag.pacientes?.nome || ag.paciente?.nome || 'Paciente'
         const startDate = new Date(ag.data_hora)
@@ -1391,9 +1393,9 @@ export default function CalendarPage() {
                 <Input id="edit-obs" value={editObs} onChange={e => setEditObs(e.target.value)} placeholder="Ex: Paciente solicitou urgência" />
               </div>
             </div>
-            <DialogFooter className="flex justify-between sm:justify-between items-center">
+            <div className="flex items-center justify-between border-t border-zinc-150 pt-4 mt-6">
               <div>
-                <Button type="button" variant="destructive" onClick={handleDeleteAgendamento} disabled={saving} className="h-9 px-3 gap-1">
+                <Button type="button" variant="destructive" onClick={handleDeleteAgendamento} disabled={saving} className="h-9 px-3 gap-1.5 bg-red-50 text-red-650 hover:bg-red-100 hover:text-red-700 border border-red-200">
                   <Trash2 className="w-3.5 h-3.5" />
                   Excluir
                 </Button>
@@ -1405,7 +1407,7 @@ export default function CalendarPage() {
                   Salvar
                 </Button>
               </div>
-            </DialogFooter>
+            </div>
           </form>
         </DialogContent>
       </Dialog>
