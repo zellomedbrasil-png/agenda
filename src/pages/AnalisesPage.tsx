@@ -10,6 +10,11 @@ export default function AnalisesPage() {
     taxaComparecimento: '0%',
     proximaConsulta: '-'
   })
+  const [distribuicao, setDistribuicao] = useState({
+    consulta: 50,
+    retorno: 30,
+    telemedicina: 20
+  })
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -28,6 +33,11 @@ export default function AnalisesPage() {
           taxaComparecimento: '92%',
           proximaConsulta: 'Hoje, 14:30'
         })
+        setDistribuicao({
+          consulta: 45,
+          retorno: 35,
+          telemedicina: 20
+        })
         setLoading(false)
       }, 500)
       return
@@ -35,23 +45,53 @@ export default function AnalisesPage() {
 
     try {
       const [pacientesRes, agendamentosRes] = await Promise.all([
-        supabase.from('pacientes').select('id', { count: 'exact' }),
-        supabase.from('agendamentos').select('id, data_hora', { count: 'exact' })
+        supabase.from('pacientes').select('id', { count: 'exact', head: true }),
+        supabase.from('agendamentos').select('id, data_hora, status, tipo')
       ])
 
       const totalPacientes = pacientesRes.count || 0
       const agendamentos = agendamentosRes.data || []
+      const totalAgendamentos = agendamentos.length
       
-      // Simple logic to find next appointment
+      // Cálculo da taxa de comparecimento real
+      const atendidos = agendamentos.filter(a => a.status === 'atendido').length
+      const faltou = agendamentos.filter(a => a.status === 'faltou').length
+      const totalFinalizados = atendidos + faltou
+      
+      let taxaComparecimento = '100%'
+      if (totalFinalizados > 0) {
+        taxaComparecimento = `${Math.round((atendidos / totalFinalizados) * 100)}%`
+      } else if (totalAgendamentos > 0) {
+        taxaComparecimento = '100%'
+      } else {
+        taxaComparecimento = '-'
+      }
+
+      // Cálculo de distribuição de tipos de consulta
+      if (totalAgendamentos > 0) {
+        const consultas = agendamentos.filter(a => a.tipo === 'Consulta' || a.tipo === 'Consulta Presencial').length
+        const retornos = agendamentos.filter(a => a.tipo === 'Retorno').length
+        const telemedicina = agendamentos.filter(a => a.tipo === 'Telemedicina').length
+        
+        const sum = consultas + retornos + telemedicina
+        if (sum > 0) {
+          setDistribuicao({
+            consulta: Math.round((consultas / sum) * 100),
+            retorno: Math.round((retornos / sum) * 100),
+            telemedicina: Math.round((telemedicina / sum) * 100)
+          })
+        }
+      }
+
+      // Encontrar próxima consulta
       const now = new Date()
       const futureAgendamentos = agendamentos
-        .map(a => new Date(a.data_hora))
-        .filter(d => d > now)
-        .sort((a, b) => a.getTime() - b.getTime())
+        .filter(a => new Date(a.data_hora) > now)
+        .sort((a, b) => new Date(a.data_hora).getTime() - new Date(b.data_hora).getTime())
 
       let proxima = '-'
       if (futureAgendamentos.length > 0) {
-        const next = futureAgendamentos[0]
+        const next = new Date(futureAgendamentos[0].data_hora)
         const isToday = next.getDate() === now.getDate() && next.getMonth() === now.getMonth()
         const timeStr = next.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
         proxima = isToday ? `Hoje, ${timeStr}` : `${next.toLocaleDateString('pt-BR')} às ${timeStr}`
@@ -59,8 +99,8 @@ export default function AnalisesPage() {
 
       setMetrics({
         totalPacientes,
-        agendamentosMes: agendamentosRes.count || 0,
-        taxaComparecimento: '85%', // mock for now as we don't track status precisely yet
+        agendamentosMes: totalAgendamentos,
+        taxaComparecimento,
         proximaConsulta: proxima
       })
     } catch (err) {
@@ -168,29 +208,29 @@ export default function AnalisesPage() {
             <div className="space-y-6 pt-4">
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
-                  <span className="font-medium text-zinc-700">Primeira Consulta</span>
-                  <span className="text-zinc-500">45%</span>
+                  <span className="font-medium text-zinc-700">Consulta Presencial</span>
+                  <span className="text-zinc-500">{distribuicao.consulta}%</span>
                 </div>
                 <div className="h-2 w-full bg-zinc-100 rounded-full overflow-hidden">
-                  <div className="h-full bg-zinc-900 w-[45%]"></div>
+                  <div className="h-full bg-zinc-900 transition-all duration-500" style={{ width: `${distribuicao.consulta}%` }}></div>
                 </div>
               </div>
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
                   <span className="font-medium text-zinc-700">Retorno</span>
-                  <span className="text-zinc-500">35%</span>
+                  <span className="text-zinc-500">{distribuicao.retorno}%</span>
                 </div>
                 <div className="h-2 w-full bg-zinc-100 rounded-full overflow-hidden">
-                  <div className="h-full bg-zinc-600 w-[35%]"></div>
+                  <div className="h-full bg-zinc-650 transition-all duration-500" style={{ width: `${distribuicao.retorno}%` }}></div>
                 </div>
               </div>
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
                   <span className="font-medium text-zinc-700">Telemedicina</span>
-                  <span className="text-zinc-500">20%</span>
+                  <span className="text-zinc-500">{distribuicao.telemedicina}%</span>
                 </div>
                 <div className="h-2 w-full bg-zinc-100 rounded-full overflow-hidden">
-                  <div className="h-full bg-zinc-300 w-[20%]"></div>
+                  <div className="h-full bg-zinc-350 transition-all duration-500" style={{ width: `${distribuicao.telemedicina}%` }}></div>
                 </div>
               </div>
             </div>
