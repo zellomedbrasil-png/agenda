@@ -55,8 +55,10 @@ export default function Login() {
     const { error } = await supabase.auth.signInWithPassword({ email, password })
     if (error) {
       setError(error.message)
+      setLoading(false)
+    } else {
+      navigate('/')
     }
-    setLoading(false)
   }
 
   return (
