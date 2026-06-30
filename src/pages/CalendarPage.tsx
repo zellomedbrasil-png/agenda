@@ -1436,6 +1436,25 @@ export default function CalendarPage() {
                 </SheetDescription>
               </div>
               <div className="flex gap-2">
+                <Button 
+                  type="button"
+                  variant="destructive" 
+                  size="sm" 
+                  onClick={async () => {
+                    if (selectedEvent) {
+                      setEditAgendamentoId(selectedEvent.id)
+                      // Pequena pausa para garantir a atualização do estado
+                      setTimeout(async () => {
+                        await handleDeleteAgendamento()
+                      }, 50)
+                    }
+                  }} 
+                  className="h-8 gap-1.5 bg-red-50 text-red-650 hover:bg-red-100 hover:text-red-700 border border-red-200" 
+                  title="Excluir este agendamento definitivamente"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Excluir Consulta</span>
+                </Button>
                 <Button variant="outline" size="sm" onClick={handleOpenEditAgendamentoFromSheet} className="h-8 gap-1.5 text-zinc-700 hover:bg-zinc-50" title="Editar dados do agendamento (hora, status, tipo)">
                   <Settings className="w-3.5 h-3.5" />
                   <span className="hidden sm:inline">Editar Consulta</span>
