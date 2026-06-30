@@ -1352,12 +1352,10 @@ export default function CalendarPage() {
             </div>
             <DialogFooter className="flex justify-between sm:justify-between items-center">
               <div>
-                {profile?.role === 'medico' && (
-                  <Button type="button" variant="destructive" onClick={handleDeleteAgendamento} disabled={saving} className="h-9 px-3 gap-1">
-                    <Trash2 className="w-3.5 h-3.5" />
-                    Excluir
-                  </Button>
-                )}
+                <Button type="button" variant="destructive" onClick={handleDeleteAgendamento} disabled={saving} className="h-9 px-3 gap-1">
+                  <Trash2 className="w-3.5 h-3.5" />
+                  Excluir
+                </Button>
               </div>
               <div className="flex gap-2">
                 <Button type="button" variant="outline" onClick={() => setEditModalOpen(false)}>Cancelar</Button>
