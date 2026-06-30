@@ -101,12 +101,55 @@ export default function CalendarPage() {
   const [pacientes, setPacientes] = useState<Paciente[]>([])
   const [loading, setLoading] = useState(true)
   const [isMobile, setIsMobile] = useState(false)
+  const [agendaBlocks, setAgendaBlocks] = useState<any[]>([])
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768)
     checkMobile()
     window.addEventListener('resize', checkMobile)
     return () => window.removeEventListener('resize', checkMobile)
+  }, [])
+
+  useEffect(() => {
+    const defaultBlocks = [
+      { daysOfWeek: [0], startTime: '08:00', endTime: '17:00', display: 'background', color: '#f8cdd1', title: 'Folga' },
+      { daysOfWeek: [1], startTime: '08:00', endTime: '12:00', display: 'background', color: '#fce4cf', title: 'Messejana' },
+      { daysOfWeek: [1], startTime: '13:00', endTime: '17:00', display: 'background', color: '#e7e6e6', title: 'Livre' },
+      { daysOfWeek: [2], startTime: '08:00', endTime: '12:00', display: 'background', color: '#fef1cd', title: 'Aldeota' },
+      { daysOfWeek: [2], startTime: '13:00', endTime: '17:00', display: 'background', color: '#fef1cd', title: 'Aldeota' },
+      { daysOfWeek: [3], startTime: '08:00', endTime: '12:00', display: 'background', color: '#d2eadd', title: 'RioMar K.' },
+      { daysOfWeek: [3], startTime: '13:00', endTime: '17:00', display: 'background', color: '#d2eadd', title: 'N.Shopping' },
+      { daysOfWeek: [4], startTime: '08:00', endTime: '12:00', display: 'background', color: '#bbf0c8', title: 'SIM Jóquei' },
+      { daysOfWeek: [4], startTime: '13:00', endTime: '17:00', display: 'background', color: '#bbf0c8', title: 'Mult Clinic' },
+      { daysOfWeek: [5], startTime: '08:00', endTime: '12:00', display: 'background', color: '#dcd0ef', title: 'Consultório' },
+      { daysOfWeek: [5], startTime: '13:00', endTime: '17:00', display: 'background', color: '#dcd0ef', title: 'Consultório' },
+      { daysOfWeek: [6], startTime: '08:00', endTime: '12:00', display: 'background', color: '#e7e6e6', title: 'Messejana' },
+      { daysOfWeek: [6], startTime: '13:00', endTime: '17:00', display: 'background', color: '#e7e6e6', title: 'Livre' }
+    ]
+    
+    const saved = localStorage.getItem('agenda_blocos')
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved)
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          const blocks = parsed.map((b: any) => ({
+            daysOfWeek: [b.dayOfWeek],
+            startTime: b.startTime,
+            endTime: b.endTime,
+            display: 'background',
+            color: b.color,
+            title: b.title
+          }))
+          setAgendaBlocks(blocks)
+        } else {
+          setAgendaBlocks([]) // if user explicitly cleared it all
+        }
+      } catch (e) {
+        setAgendaBlocks(defaultBlocks)
+      }
+    } else {
+      setAgendaBlocks(defaultBlocks)
+    }
   }, [])
 
   // Edit Appointment Modal state
@@ -1273,19 +1316,7 @@ export default function CalendarPage() {
             slotMaxTime="20:00:00"
             events={[
               ...events,
-              { daysOfWeek: [0], startTime: '08:00', endTime: '17:00', display: 'background', color: '#f8cdd1', title: 'Folga' },
-              { daysOfWeek: [1], startTime: '08:00', endTime: '12:00', display: 'background', color: '#fce4cf', title: 'Messejana' },
-              { daysOfWeek: [1], startTime: '13:00', endTime: '17:00', display: 'background', color: '#e7e6e6', title: 'Livre' },
-              { daysOfWeek: [2], startTime: '08:00', endTime: '12:00', display: 'background', color: '#fef1cd', title: 'Aldeota' },
-              { daysOfWeek: [2], startTime: '13:00', endTime: '17:00', display: 'background', color: '#fef1cd', title: 'Aldeota' },
-              { daysOfWeek: [3], startTime: '08:00', endTime: '12:00', display: 'background', color: '#d2eadd', title: 'RioMar K.' },
-              { daysOfWeek: [3], startTime: '13:00', endTime: '17:00', display: 'background', color: '#d2eadd', title: 'N.Shopping' },
-              { daysOfWeek: [4], startTime: '08:00', endTime: '12:00', display: 'background', color: '#bbf0c8', title: 'SIM Jóquei' },
-              { daysOfWeek: [4], startTime: '13:00', endTime: '17:00', display: 'background', color: '#bbf0c8', title: 'Mult Clinic' },
-              { daysOfWeek: [5], startTime: '08:00', endTime: '12:00', display: 'background', color: '#dcd0ef', title: 'Consultório' },
-              { daysOfWeek: [5], startTime: '13:00', endTime: '17:00', display: 'background', color: '#dcd0ef', title: 'Consultório' },
-              { daysOfWeek: [6], startTime: '08:00', endTime: '12:00', display: 'background', color: '#e7e6e6', title: 'Messejana' },
-              { daysOfWeek: [6], startTime: '13:00', endTime: '17:00', display: 'background', color: '#e7e6e6', title: 'Livre' }
+              ...agendaBlocks
             ]}
             height="auto"
             eventColor="#18181b" 
