@@ -308,11 +308,28 @@ export default function CalendarPage() {
       const formattedEvents = agendamentosRes.data.map((ag: any) => {
         const pacienteObj = (pacientesRes.data || []).find((p: any) => p.id === ag.paciente_id)
         const pacienteNome = pacienteObj?.nome || ag.pacientes?.nome || ag.paciente?.nome || 'Paciente'
+        const startDate = new Date(ag.data_hora)
+        const yyyy = startDate.getFullYear()
+        const mm = String(startDate.getMonth() + 1).padStart(2, '0')
+        const dd = String(startDate.getDate()).padStart(2, '0')
+        const hh = String(startDate.getHours()).padStart(2, '0')
+        const min = String(startDate.getMinutes()).padStart(2, '0')
+        const localStart = `${yyyy}-${mm}-${dd}T${hh}:${min}:00`
+
+        const duracaoMin = ag.duracao_min || 60
+        const endDate = new Date(startDate.getTime() + duracaoMin * 60 * 1000)
+        const endYyyy = endDate.getFullYear()
+        const endMm = String(endDate.getMonth() + 1).padStart(2, '0')
+        const endDd = String(endDate.getDate()).padStart(2, '0')
+        const endHh = String(endDate.getHours()).padStart(2, '0')
+        const endMin = String(endDate.getMinutes()).padStart(2, '0')
+        const localEnd = `${endYyyy}-${endMm}-${endDd}T${endHh}:${endMin}:00`
+
         return {
           id: ag.id,
           title: `${ag.tipo || 'Consulta'} - ${pacienteNome}`,
-          start: ag.data_hora,
-          end: new Date(new Date(ag.data_hora).getTime() + (ag.duracao_min || 60)*60*1000).toISOString(),
+          start: localStart,
+          end: localEnd,
           paciente_id: ag.paciente_id,
           tipo: ag.tipo,
           status: ag.status,
