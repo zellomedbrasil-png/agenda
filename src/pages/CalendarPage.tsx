@@ -100,6 +100,14 @@ export default function CalendarPage() {
   const [events, setEvents] = useState<Event[]>([])
   const [pacientes, setPacientes] = useState<Paciente[]>([])
   const [loading, setLoading] = useState(true)
+  const [isMobile, setIsMobile] = useState(false)
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768)
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   // Edit Appointment Modal state
   const [editModalOpen, setEditModalOpen] = useState(false)
@@ -1239,31 +1247,69 @@ export default function CalendarPage() {
         </div>
       </div>
       
-      <div className="bg-white rounded-xl border border-zinc-200 p-4 shadow-sm">
-        <FullCalendar
-          plugins={[ dayGridPlugin, timeGridPlugin, interactionPlugin ]}
-          initialView="timeGridWeek"
-          headerToolbar={{
-            left: 'prev,next today',
-            center: 'title',
-            right: 'dayGridMonth,timeGridWeek,timeGridDay'
-          }}
-          locale="pt-br"
-          buttonText={{
-            today: 'Hoje',
-            month: 'Mês',
-            week: 'Semana',
-            day: 'Dia'
-          }}
-          allDaySlot={false}
-          slotMinTime="07:00:00"
-          slotMaxTime="20:00:00"
-          events={events}
-          height="auto"
-          eventColor="#18181b" 
-          dateClick={handleDateClick}
-          eventClick={handleEventClick}
-        />
+      <div className="bg-white rounded-xl border border-zinc-200 p-2 sm:p-4 shadow-sm overflow-x-auto">
+        <div className="min-w-[600px] sm:min-w-0">
+          <FullCalendar
+            plugins={[ dayGridPlugin, timeGridPlugin, interactionPlugin ]}
+            initialView={isMobile ? "timeGridDay" : "timeGridWeek"}
+            headerToolbar={isMobile ? {
+              left: 'prev,next',
+              center: 'title',
+              right: 'timeGridDay,timeGridWeek'
+            } : {
+              left: 'prev,next today',
+              center: 'title',
+              right: 'dayGridMonth,timeGridWeek,timeGridDay'
+            }}
+            locale="pt-br"
+            buttonText={{
+              today: 'Hoje',
+              month: 'Mês',
+              week: 'Semana',
+              day: 'Dia'
+            }}
+            allDaySlot={false}
+            slotMinTime="07:00:00"
+            slotMaxTime="20:00:00"
+            events={[
+              ...events,
+              { daysOfWeek: [0], startTime: '08:00', endTime: '17:00', display: 'background', color: '#f8cdd1', title: 'Folga' },
+              { daysOfWeek: [1], startTime: '08:00', endTime: '12:00', display: 'background', color: '#fce4cf', title: 'Messejana' },
+              { daysOfWeek: [1], startTime: '13:00', endTime: '17:00', display: 'background', color: '#e7e6e6', title: 'Livre' },
+              { daysOfWeek: [2], startTime: '08:00', endTime: '12:00', display: 'background', color: '#fef1cd', title: 'Aldeota' },
+              { daysOfWeek: [2], startTime: '13:00', endTime: '17:00', display: 'background', color: '#fef1cd', title: 'Aldeota' },
+              { daysOfWeek: [3], startTime: '08:00', endTime: '12:00', display: 'background', color: '#d2eadd', title: 'RioMar K.' },
+              { daysOfWeek: [3], startTime: '13:00', endTime: '17:00', display: 'background', color: '#d2eadd', title: 'N.Shopping' },
+              { daysOfWeek: [4], startTime: '08:00', endTime: '12:00', display: 'background', color: '#bbf0c8', title: 'SIM Jóquei' },
+              { daysOfWeek: [4], startTime: '13:00', endTime: '17:00', display: 'background', color: '#bbf0c8', title: 'Mult Clinic' },
+              { daysOfWeek: [5], startTime: '08:00', endTime: '12:00', display: 'background', color: '#dcd0ef', title: 'Consultório' },
+              { daysOfWeek: [5], startTime: '13:00', endTime: '17:00', display: 'background', color: '#dcd0ef', title: 'Consultório' },
+              { daysOfWeek: [6], startTime: '08:00', endTime: '12:00', display: 'background', color: '#e7e6e6', title: 'Messejana' },
+              { daysOfWeek: [6], startTime: '13:00', endTime: '17:00', display: 'background', color: '#e7e6e6', title: 'Livre' }
+            ]}
+            height="auto"
+            eventColor="#18181b" 
+            dateClick={handleDateClick}
+            eventClick={handleEventClick}
+            eventContent={(arg) => {
+              if (arg.event.display === 'background') {
+                return (
+                  <div className="w-full h-full flex flex-col items-center justify-center p-1 sm:p-2 opacity-75">
+                    <span className="text-zinc-700 font-medium text-[10px] sm:text-xs leading-tight text-center drop-shadow-sm">
+                      {arg.event.title}
+                    </span>
+                  </div>
+                )
+              }
+              return (
+                <div className="flex flex-col p-1 overflow-hidden h-full">
+                  <span className="font-semibold text-xs whitespace-nowrap overflow-hidden text-ellipsis">{arg.event.title}</span>
+                  {arg.timeText && <span className="text-[10px] opacity-80">{arg.timeText}</span>}
+                </div>
+              )
+            }}
+          />
+        </div>
       </div>
 
       {/* NOVO AGENDAMENTO MODAL */}
