@@ -785,8 +785,8 @@ export default function PacientesPage() {
         />
       </div>
 
-      <div className="bg-white border border-zinc-200 rounded-xl overflow-hidden shadow-sm">
-        <Table>
+      <div className="bg-white border border-zinc-200 rounded-xl overflow-x-auto overflow-y-hidden shadow-sm">
+        <Table className="min-w-[600px]">
           <TableHeader className="bg-zinc-50/50">
             <TableRow>
               <TableHead>Nome</TableHead>
