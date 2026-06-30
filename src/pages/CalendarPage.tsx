@@ -305,17 +305,21 @@ export default function CalendarPage() {
 
     if (pacientesRes.data) setPacientes(pacientesRes.data)
     if (agendamentosRes.data) {
-      const formattedEvents = agendamentosRes.data.map((ag: any) => ({
-        id: ag.id,
-        title: `${ag.tipo || 'Consulta'} - ${ag.pacientes?.nome || 'Paciente'}`,
-        start: ag.data_hora,
-        end: new Date(new Date(ag.data_hora).getTime() + (ag.duracao_min || 60)*60*1000).toISOString(),
-        paciente_id: ag.paciente_id,
-        tipo: ag.tipo,
-        status: ag.status,
-        valor: ag.valor,
-        observacoes: ag.observacoes
-      }))
+      const formattedEvents = agendamentosRes.data.map((ag: any) => {
+        const pacienteObj = (pacientesRes.data || []).find((p: any) => p.id === ag.paciente_id)
+        const pacienteNome = pacienteObj?.nome || ag.pacientes?.nome || ag.paciente?.nome || 'Paciente'
+        return {
+          id: ag.id,
+          title: `${ag.tipo || 'Consulta'} - ${pacienteNome}`,
+          start: ag.data_hora,
+          end: new Date(new Date(ag.data_hora).getTime() + (ag.duracao_min || 60)*60*1000).toISOString(),
+          paciente_id: ag.paciente_id,
+          tipo: ag.tipo,
+          status: ag.status,
+          valor: ag.valor,
+          observacoes: ag.observacoes
+        }
+      })
       setEvents(formattedEvents)
     }
     setLoading(false)
@@ -344,8 +348,17 @@ export default function CalendarPage() {
       setEditAgendamentoId(ev.id)
       setEditPacienteId(ev.paciente_id || '')
       setEditTipo(ev.tipo || 'Consulta')
-      setEditHorario(new Date(ev.start).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }).substring(0, 5))
-      setEditDateStr(ev.start.split('T')[0])
+      
+      const dateObj = new Date(ev.start)
+      const yyyy = dateObj.getFullYear()
+      const mm = String(dateObj.getMonth() + 1).padStart(2, '0')
+      const dd = String(dateObj.getDate()).padStart(2, '0')
+      setEditDateStr(`${yyyy}-${mm}-${dd}`)
+      
+      const hh = String(dateObj.getHours()).padStart(2, '0')
+      const min = String(dateObj.getMinutes()).padStart(2, '0')
+      setEditHorario(`${hh}:${min}`)
+      
       setEditStatus(ev.status || 'agendado')
       setEditValor(ev.valor?.toString() || '')
       setEditObs(ev.observacoes || '')
@@ -466,7 +479,8 @@ export default function CalendarPage() {
     }
 
     setSaving(true)
-    const dateTime = `${selectedDateStr}T${horario}:00`
+    const localDate = new Date(`${selectedDateStr}T${horario}:00`)
+    const dateTime = localDate.toISOString()
     
     if (import.meta.env.VITE_SUPABASE_URL.includes('your-project-url')) {
       setTimeout(() => {
@@ -518,8 +532,17 @@ export default function CalendarPage() {
     setEditAgendamentoId(selectedEvent.id)
     setEditPacienteId(selectedEvent.paciente_id || '')
     setEditTipo(selectedEvent.tipo || 'Consulta')
-    setEditHorario(new Date(selectedEvent.start).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }).substring(0, 5))
-    setEditDateStr(selectedEvent.start.split('T')[0])
+    
+    const dateObj = new Date(selectedEvent.start)
+    const yyyy = dateObj.getFullYear()
+    const mm = String(dateObj.getMonth() + 1).padStart(2, '0')
+    const dd = String(dateObj.getDate()).padStart(2, '0')
+    setEditDateStr(`${yyyy}-${mm}-${dd}`)
+    
+    const hh = String(dateObj.getHours()).padStart(2, '0')
+    const min = String(dateObj.getMinutes()).padStart(2, '0')
+    setEditHorario(`${hh}:${min}`)
+    
     setEditStatus(statusAtendimento)
     setEditValor(selectedEvent.valor?.toString() || '')
     setEditObs(selectedEvent.observacoes || '')
@@ -534,7 +557,8 @@ export default function CalendarPage() {
     }
 
     setSaving(true)
-    const dateTime = `${editDateStr}T${editHorario}:05` // Adicionando 5s para evitar choque estrito ou diferenciar
+    const localDate = new Date(`${editDateStr}T${editHorario}:00`)
+    const dateTime = localDate.toISOString()
 
     const data = {
       paciente_id: editPacienteId,
