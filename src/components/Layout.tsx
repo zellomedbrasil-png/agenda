@@ -19,7 +19,7 @@ export default function Layout() {
   const navItems = [
     { name: 'Calendário', path: '/', icon: Calendar, show: true },
     { name: 'Pacientes', path: '/pacientes', icon: Users, show: true },
-    { name: 'Disponibilidade', path: '/disponibilidade', icon: Clock, show: profile?.role === 'medico' },
+    { name: 'Disponibilidade', path: '/disponibilidade', icon: Clock, show: true },
     { name: 'Análises', path: '/analises', icon: BarChart3, show: true }, // The planning says secretary can see some tabs
   ]
 

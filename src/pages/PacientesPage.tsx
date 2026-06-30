@@ -819,12 +819,8 @@ export default function PacientesPage() {
               filtered.map((paciente) => (
                 <TableRow 
                   key={paciente.id} 
-                  onClick={() => {
-                    if (profile?.role === 'medico') {
-                      handleRowClick(paciente)
-                    }
-                  }}
-                  className={profile?.role === 'medico' ? "cursor-pointer hover:bg-zinc-50 transition-colors" : "cursor-default"}
+                  onClick={() => handleRowClick(paciente)}
+                  className="cursor-pointer hover:bg-zinc-50 transition-colors"
                 >
                   <TableCell className="font-medium">{paciente.nome}</TableCell>
                   <TableCell>{paciente.telefone}</TableCell>
@@ -858,6 +854,10 @@ export default function PacientesPage() {
             {historicoLoading ? (
               <div className="flex justify-center items-center py-12">
                 <Loader2 className="w-6 h-6 animate-spin text-zinc-400" />
+              </div>
+            ) : profile?.role !== 'medico' ? (
+              <div className="text-center py-8 px-4 border border-dashed border-red-200 bg-red-50/50 rounded-lg text-sm text-red-600">
+                Acesso restrito. Apenas médicos podem visualizar o histórico de prontuários.
               </div>
             ) : historicoProntuarios.length === 0 ? (
               <div className="text-center py-8 px-4 border border-dashed border-zinc-200 rounded-lg text-sm text-zinc-500">
