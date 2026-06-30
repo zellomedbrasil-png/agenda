@@ -487,11 +487,17 @@ export default function CalendarPage() {
       return
     }
 
+    let localId = 'cb6b7e67-8e6d-47be-93cb-3f82522eb185'
+    const { data: locais } = await supabase.from('locais_atendimento').select('id').limit(1)
+    if (locais && locais.length > 0) {
+      localId = locais[0].id
+    }
+
     const { error } = await supabase.from('agendamentos').insert([{
       paciente_id: pacienteId,
       data_hora: dateTime,
       duracao_min: 60,
-      local_id: 'cb6b7e67-8e6d-47be-93cb-3f82522eb185', // mocked default local for now
+      local_id: localId,
       tipo,
       status: 'agendado',
       created_by: (await supabase.auth.getUser()).data.user?.id
