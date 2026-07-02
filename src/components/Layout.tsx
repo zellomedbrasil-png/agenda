@@ -1,18 +1,16 @@
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuthStore } from '@/store/useAuthStore'
-import { supabase } from '@/lib/supabase'
+
 import { Button } from '@/components/ui/button'
 import { Calendar, Users, BarChart3, LogOut, Clock } from 'lucide-react'
 
 export default function Layout() {
-  const { profile, setUser, setProfile } = useAuthStore()
+  const { profile, logout } = useAuthStore()
   const navigate = useNavigate()
   const location = useLocation()
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut()
-    setUser(null)
-    setProfile(null)
+  const handleLogout = () => {
+    logout()
     navigate('/login')
   }
 

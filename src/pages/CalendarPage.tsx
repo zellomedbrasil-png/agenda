@@ -583,8 +583,7 @@ export default function CalendarPage() {
       duracao_min: 60,
       local_id: localId,
       tipo,
-      status: 'agendado',
-      created_by: (await supabase.auth.getUser()).data.user?.id
+      status: 'agendado'
     }])
 
     if (error) {
