@@ -287,6 +287,30 @@ export default function PacientesPage() {
     setObservacoes('')
   }
 
+  const handleDeletePaciente = async (id: string | undefined) => {
+    if (!id) return
+    if (!confirm('Tem certeza que deseja excluir este paciente? Esta ação apagará também os prontuários e agendamentos vinculados a ele.')) return
+    
+    if (import.meta.env.VITE_SUPABASE_URL.includes('your-project-url')) {
+      setTimeout(() => {
+        setPacientes(pacientes.filter(p => p.id !== id))
+        toast({ title: 'Paciente excluído', description: 'Paciente removido com sucesso.' })
+        setSheetOpen(false)
+      }, 500)
+      return
+    }
+
+    const { error } = await supabase.from('pacientes').delete().eq('id', id)
+    
+    if (error) {
+      toast({ variant: 'destructive', title: 'Erro ao excluir', description: error.message })
+    } else {
+      toast({ title: 'Sucesso', description: 'Paciente excluído com sucesso.' })
+      fetchPacientes()
+      setSheetOpen(false)
+    }
+  }
+
   const handlePrintProntuario = (pront: ProntuarioMini) => {
     const printWindow = window.open('', '_blank')
     if (!printWindow) return
@@ -837,12 +861,22 @@ export default function PacientesPage() {
 
       <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
         <SheetContent className="sm:max-w-md w-full flex flex-col gap-0 p-0">
-          <SheetHeader className="p-6 pb-4 border-b border-zinc-200 bg-zinc-50">
-            <SheetTitle className="text-xl">{selectedPaciente?.nome}</SheetTitle>
-            <SheetDescription className="flex flex-col gap-1 mt-2">
-              <span>{selectedPaciente?.telefone}</span>
-              {selectedPaciente?.email && <span>{selectedPaciente?.email}</span>}
-            </SheetDescription>
+          <SheetHeader className="p-6 pb-4 border-b border-zinc-200 bg-zinc-50 flex flex-row items-start justify-between">
+            <div>
+              <SheetTitle className="text-xl">{selectedPaciente?.nome}</SheetTitle>
+              <SheetDescription className="flex flex-col gap-1 mt-2">
+                <span>{selectedPaciente?.telefone}</span>
+                {selectedPaciente?.email && <span>{selectedPaciente?.email}</span>}
+              </SheetDescription>
+            </div>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => handleDeletePaciente(selectedPaciente?.id)} 
+              className="text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700 mt-1"
+            >
+              <Trash2 className="w-4 h-4 mr-2" /> Excluir
+            </Button>
           </SheetHeader>
           
           <ScrollArea className="flex-1 p-6">
