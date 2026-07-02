@@ -1,14 +1,14 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '@/store/useAuthStore'
-import { supabase } from '@/lib/supabase'
+
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 
 export default function Login() {
-  const [email, setEmail] = useState('')
+  const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -20,45 +20,24 @@ export default function Login() {
     setLoading(true)
     setError(null)
     
-    // MOCK LOGIN PARA EXEMPLO LOCAL
-    if (import.meta.env.VITE_SUPABASE_URL.includes('your-project-url')) {
-      setTimeout(() => {
-        if (password !== '123456') {
-          setError('Senha incorreta!')
-          setLoading(false)
-          return
-        }
+    // Login Simples Hardcoded
+    setTimeout(() => {
+      const userLower = username.toLowerCase().trim()
+      const passLower = password.toLowerCase().trim()
 
-        const isSecretaria = email.toLowerCase().includes('sara')
-        const isMedico = email.toLowerCase().includes('roberto')
-
-        if (!isSecretaria && !isMedico) {
-          setError('Usuário não cadastrado! Use os logins sara ou roberto.')
-          setLoading(false)
-          return
-        }
-
-        if (isSecretaria) {
-          setUser({ id: 'fake-secretaria-id', email } as any)
-          setProfile({ id: 'fake-secretaria-id', nome: 'Sara (Secretária)', role: 'secretaria' })
-        } else {
-          setUser({ id: 'fake-medico-id', email } as any)
-          setProfile({ id: 'fake-medico-id', nome: 'Dr. Roberto (Médico)', role: 'medico' })
-        }
-
+      if (userLower === 'sara' && passLower === 'sara') {
+        setUser({ id: 'secretaria-id', email: 'sara@arcanjo' } as any)
+        setProfile({ id: 'secretaria-id', nome: 'Sara (Secretária)', role: 'secretaria' })
         navigate('/')
-        setLoading(false)
-      }, 500)
-      return
-    }
-
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
-    if (error) {
-      setError(error.message)
+      } else if (userLower === 'roberto' && passLower === 'roberto') {
+        setUser({ id: 'medico-id', email: 'roberto@arcanjo' } as any)
+        setProfile({ id: 'medico-id', nome: 'Dr. Roberto (Médico)', role: 'medico' })
+        navigate('/')
+      } else {
+        setError('Usuário ou senha incorretos! Use "roberto" ou "sara".')
+      }
       setLoading(false)
-    } else {
-      navigate('/')
-    }
+    }, 500)
   }
 
   return (
@@ -78,13 +57,13 @@ export default function Login() {
               </div>
             )}
             <div className="space-y-2">
-              <Label htmlFor="email">E-mail</Label>
+              <Label htmlFor="username">Usuário</Label>
               <Input 
-                id="email" 
-                type="email" 
-                placeholder="nome@exemplo.com" 
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                id="username" 
+                type="text" 
+                placeholder="sara ou roberto" 
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
                 required 
               />
             </div>
